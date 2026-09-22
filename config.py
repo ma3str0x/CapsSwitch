@@ -3,14 +3,25 @@ import sys
 import json
 import winreg
 
-if getattr(sys, 'frozen', False):
-    APP_DIR = os.path.dirname(sys.executable)
-else:
-    APP_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 RUN_REG_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 APP_NAME = "CapsSwitch"
+
+def get_config_path():
+    if not getattr(sys, 'frozen', False):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, "config.json")
+    
+    exe_dir = os.path.dirname(sys.executable)
+    local_config = os.path.join(exe_dir, "config.json")
+    if os.path.exists(local_config):
+        return local_config
+    
+    appdata = os.getenv("APPDATA") or os.path.expanduser(r"~\AppData\Roaming")
+    config_dir = os.path.join(appdata, "CapsSwitch")
+    os.makedirs(config_dir, exist_ok=True)
+    return os.path.join(config_dir, "config.json")
+
+CONFIG_FILE = get_config_path()
 
 DEFAULT_CONFIG = {
     "trigger_key": "Caps Lock",
@@ -55,6 +66,7 @@ def get_live_config():
 
 def save_config(config):
     try:
+        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
     except Exception as e:
@@ -79,14 +91,14 @@ def set_startup_enabled(enable: bool):
                 else:
                     base_dir = os.path.dirname(os.path.abspath(__file__))
                     vbs_path = os.path.join(base_dir, "CapsSwitch.vbs")
-                if os.path.exists(vbs_path):
-                    cmd = f'wscript.exe "{vbs_path}"'
-                else:
-                    pythonw = os.path.join(sys.prefix, "pythonw.exe")
-                    if not os.path.exists(pythonw):
-                        pythonw = sys.executable
-                    main_py = os.path.join(base_dir, "main.py")
-                    cmd = f'"{pythonw}" "{main_py}"'
+                    if os.path.exists(vbs_path):
+                        cmd = f'wscript.exe "{vbs_path}"'
+                    else:
+                        pythonw = os.path.join(sys.prefix, "pythonw.exe")
+                        if not os.path.exists(pythonw):
+                            pythonw = sys.executable
+                        main_py = os.path.join(base_dir, "main.py")
+                        cmd = f'"{pythonw}" "{main_py}"'
                 
                 winreg.SetValueEx(key, APP_NAME, 0, winreg.REG_SZ, cmd)
             else:
