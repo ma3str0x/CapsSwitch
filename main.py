@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 import ctypes
 from ctypes import wintypes
@@ -7,6 +7,11 @@ import atexit
 from config import load_config, get_live_config
 from keyboard_hook import KeyboardHook
 from status_icon import StatusIconApp
+
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('ma3str0x.capsswitch.app')
+except Exception:
+    pass
 
 def _fix_tcl_tk():
     if getattr(sys, 'frozen', False):
@@ -84,12 +89,15 @@ def main():
     atexit.register(on_exit)
 
     app = StatusIconApp(config, on_config_change, on_exit)
+    hook.on_toggle_pause = app.toggle_enabled
     try:
         app.run()
     except KeyboardInterrupt:
         pass
     finally:
         on_exit()
+        import os
+        os._exit(0)
 
 if __name__ == "__main__":
     main()

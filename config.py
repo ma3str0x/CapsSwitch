@@ -25,11 +25,21 @@ CONFIG_FILE = get_config_path()
 
 DEFAULT_CONFIG = {
     "trigger_key": "Caps Lock",
-    "switch_shortcut": "Win+Space",
+    "trigger_vk": 0x14,
+    "switch_shortcut": "Alt+Shift",
     "hold_threshold_ms": 220,
     "enable_shift_caps": True,
     "start_with_windows": False,
-    "enabled": True
+    "enabled": True,
+    "sound_enabled": False,
+    "sound_preset": "Main",
+    "sound_volume": 70,
+    "pause_hotkey_enabled": False,
+    "pause_hotkey_key": "None",
+    "pause_hotkey_vk": None,
+    "blacklist_enabled": False,
+    "blacklist": [],
+    "theme": "System"
 }
 
 def load_config():
@@ -110,3 +120,7 @@ def set_startup_enabled(enable: bool):
     except Exception as e:
         print(f"Startup config error: {e}")
         return False
+
+
+
+

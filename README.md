@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <img src="img/logo_base.png" alt="CapsSwitch Logo" width="120" />
 </p>
 
@@ -21,10 +21,14 @@ A quick tap triggers your configured language switch shortcut. Holding the key k
 Right-click the app icon to configure:
 
 - **Switch language key**: Caps Lock, Tilde, or custom key
-- **Windows combination**: `Win+Space`, `Alt+Shift`, or `Ctrl+Shift`
+- **Windows combination**: Win+Space, Alt+Shift, or Ctrl+Shift
 - **Push-to-Talk delay**: Threshold in milliseconds
 - **Shift + Caps Lock switches UPPERCASE**: Toggle behavior
 - **Start automatically with Windows**: Toggle autostart
+- **Pause / resume hotkey**: Assign a custom hotkey to quickly pause the language switcher
+- **Sound signal on pause / resume**: Audio feedback
+- **Enable App Blacklist / Exceptions**: Disable the hook automatically in specific games or apps
+- **App Theme**: System, Light, or Dark mode
 
 ## How to run
 
@@ -52,3 +56,4 @@ Download the latest **[CapsSwitch.exe](../../releases/latest)** from the Release
 
 - Windows 10 / 11
 - Python 3.10+ (only when running from source)
+

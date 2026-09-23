@@ -1,6 +1,7 @@
 import ctypes
 from ctypes import wintypes
 import threading
+import os
 
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
@@ -128,9 +129,33 @@ user32.GetKeyState.restype = ctypes.c_short
 user32.GetAsyncKeyState.argtypes = [ctypes.c_int]
 user32.GetAsyncKeyState.restype = ctypes.c_short
 
+
+def get_active_window_exe():
+    hwnd = user32.GetForegroundWindow()
+    if not hwnd:
+        return None
+    
+    pid = wintypes.DWORD()
+    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    
+    process_handle = kernel32.OpenProcess(0x1000, False, pid.value)
+    if not process_handle:
+        return None
+        
+    exe_path = ctypes.create_unicode_buffer(260)
+    size = wintypes.DWORD(260)
+    
+    success = kernel32.QueryFullProcessImageNameW(process_handle, 0, exe_path, ctypes.byref(size))
+    kernel32.CloseHandle(process_handle)
+    
+    if success:
+        return os.path.basename(exe_path.value).lower()
+    return None
+
 class KeyboardHook:
-    def __init__(self, config_getter):
+    def __init__(self, config_getter, on_toggle_pause=None):
         self.config_getter = config_getter
+        self.on_toggle_pause = on_toggle_pause
         self.hook_id = None
         self.hook_thread = None
         self.hook_thread_id = None
@@ -214,8 +239,27 @@ class KeyboardHook:
             return user32.CallNextHookEx(self.hook_id, nCode, wParam, lParam)
 
         cfg = self.config_getter()
+
+        # Check pause / resume toggle hotkey
+        if cfg.get("pause_hotkey_enabled", False):
+            pause_vk = cfg.get("pause_hotkey_vk")
+            if pause_vk is not None and kbd.vkCode == int(pause_vk):
+                if wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
+                    if self.on_toggle_pause:
+                        self.on_toggle_pause()
+                return 1
+
+
         if not cfg.get("enabled", True):
             return user32.CallNextHookEx(self.hook_id, nCode, wParam, lParam)
+
+        if cfg.get("blacklist_enabled", False):
+            blacklist = cfg.get("blacklist", [])
+            if blacklist:
+                active_exe = get_active_window_exe()
+                if active_exe and active_exe in [app.lower() for app in blacklist]:
+                    return user32.CallNextHookEx(self.hook_id, nCode, wParam, lParam)
+
 
         trigger_vk = self.get_trigger_vk()
 
@@ -330,3 +374,5 @@ class KeyboardHook:
         self.hook_thread = None
         self.hook_thread_id = None
         self.running = False
+
+

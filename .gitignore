@@ -1,8 +1,7 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
-*$py.class
-
+*.class
 # Virtual environments
 .venv/
 venv/
@@ -10,22 +9,26 @@ env/
 ENV/
 env.bak/
 venv.bak/
-
 # User configuration / state
 config.json
-
 # IDEs and Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-
 # OS generated files
 .DS_Store
 Thumbs.db
-
 # PyInstaller build outputs
 dist/
 build/
 *.spec
 *.exe
+# Local notes & planning
+ROADMAP.md
+file_version_info.txt
+build.bat
+
+docs/
+
+
